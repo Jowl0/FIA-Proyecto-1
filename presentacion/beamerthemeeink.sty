@@ -1,0 +1,186 @@
+% beamerthemeeink.sty
+% Tema e-ink basado en la configuración de Hyprland + Waybar:
+%   * papel #F2F2E9, tinta #121212, sin degradados ni esquinas redondeadas.
+%   * "ventanas" con borde de 2px y sombra dura desplazada (sin desenfoque).
+%   * números de sección invertidos (tinta/papel), como los workspaces.
+%   * tipografía JetBrainsMono Nerd Font (compilar con LuaLaTeX).
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemeeink}[2026/09/28 Tema e-ink (Hyprland/Waybar)]
+
+\RequirePackage[no-math]{fontspec} % fórmulas con la fuente matemática clásica
+\RequirePackage{tikz}
+\RequirePackage[most]{tcolorbox}
+\usetikzlibrary{calc}
+\usetikzlibrary{shadows,arrows.meta,positioning}
+% Nodo "ventana" de TikZ con la misma sombra dura
+\tikzset{
+  inkwin/.style={draw=ink, line width=\inkthin, fill=paper, inner sep=2mm,
+                 general shadow={fill=ink, shadow xshift=1.2mm, shadow yshift=-1.2mm}},
+  inkflecha/.style={-{Latex[length=2.2mm]}, line width=1.2pt, draw=ink},
+}
+
+% ---------------------------------------------------------------
+% Paleta (waybar/style.css, hyprland.conf)
+% ---------------------------------------------------------------
+\definecolor{paper}{HTML}{F2F2E9}
+\definecolor{ink}{HTML}{121212}
+\definecolor{inactive}{HTML}{999999}
+\definecolor{sage}{HTML}{6B7A6B}
+\definecolor{sagelight}{HTML}{8DA18D}
+\definecolor{rust}{HTML}{945454}
+
+% Medidas: 2px -> borde fino, 6px -> borde grueso, offset 18px -> sombra
+\newlength{\inkthin}  \setlength{\inkthin}{0.8pt}
+\newlength{\inkthick} \setlength{\inkthick}{2.4pt}
+\newlength{\inkshadow}\setlength{\inkshadow}{1.6mm}
+
+% ---------------------------------------------------------------
+% Tipografía
+% ---------------------------------------------------------------
+\setmainfont{JetBrainsMono Nerd Font}[Scale=0.92]
+\setsansfont{JetBrainsMono Nerd Font}[Scale=0.92]
+\setmonofont{JetBrainsMono Nerd Font}[Scale=0.92]
+\usefonttheme{professionalfonts}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{size=\normalsize}
+\setbeamerfont{author}{size=\small,series=\bfseries}
+\setbeamerfont{institute}{size=\small}
+\setbeamerfont{date}{size=\small}
+\setbeamerfont{alerted text}{series=\bfseries}
+\setbeamerfont{block title}{size=\small,series=\bfseries}
+
+% ---------------------------------------------------------------
+% Colores de beamer
+% ---------------------------------------------------------------
+\setbeamercolor{normal text}{fg=ink,bg=paper}
+\setbeamercolor{background canvas}{bg=paper}
+\setbeamercolor{structure}{fg=ink}
+\setbeamercolor{alerted text}{fg=ink}
+\setbeamercolor{frametitle}{fg=ink,bg=paper}
+\setbeamercolor{title}{fg=ink}
+\setbeamercolor{itemize item}{fg=ink}
+\setbeamercolor{itemize subitem}{fg=ink}
+\setbeamercolor{bibliography entry author}{fg=ink}
+\setbeamercolor{bibliography entry title}{fg=ink}
+\setbeamercolor{bibliography entry location}{fg=inactive!70!ink}
+\setbeamercolor{bibliography entry note}{fg=inactive!70!ink}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize item}{\raisebox{0.15em}{\rule{0.42em}{0.42em}}}
+\setbeamertemplate{itemize subitem}{\raisebox{0.18em}{\fcolorbox{ink}{paper}{\rule{0pt}{0pt}\rule{0.2em}{0pt}}}}
+\setbeamertemplate{enumerate item}{\insertenumlabel.}
+\setbeamertemplate{bibliography item}{[\insertbiblabel]}
+\setbeamersize{text margin left=10mm,text margin right=10mm}
+
+% \alert{...}: texto invertido (tinta sobre papel), como un módulo activo
+\renewcommand{\alert}[1]{{\setlength{\fboxsep}{1.2pt}\colorbox{ink}{\textcolor{paper}{\bfseries\strut #1}}}}
+
+% ---------------------------------------------------------------
+% Título del frame: negritas con línea gruesa de tinta debajo
+% ---------------------------------------------------------------
+\setbeamertemplate{frametitle}{%
+  \vskip6mm
+  {\usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}\insertframetitle\par}%
+  \vskip1.5mm
+  {\color{ink}\rule{\textwidth}{\inkthick}}%
+  \vskip2mm}
+
+% Pie: autores a la izquierda, número de diapositiva a la derecha
+\setbeamertemplate{footline}{%
+  \hbox to \paperwidth{\hskip10mm{\color{inactive!60!ink}\tiny\insertshortauthor}\hfill
+    {\color{ink}\scriptsize\bfseries\insertframenumber\,/\,\inserttotalframenumber}\hskip10mm}%
+  \vskip3mm}
+
+% ---------------------------------------------------------------
+% Ventanas (Hyprland): borde 2px + sombra dura desplazada
+% ---------------------------------------------------------------
+\tcbset{
+  inkwin/.style={
+    enhanced, sharp corners, colback=paper, colframe=ink,
+    boxrule=\inkthin, left=2.5mm, right=2.5mm, top=2mm, bottom=2mm,
+    shadow={\inkshadow}{-\inkshadow}{0mm}{fill=ink},
+    fonttitle=\small\bfseries, coltitle=paper, colbacktitle=ink,
+    toptitle=0.6mm, bottomtitle=0.6mm, before skip=2mm, after skip=3mm,
+  }
+}
+\newtcolorbox{ventana}[1][]{inkwin,#1}
+\newtcolorbox{ventanat}[2][]{inkwin,title={#2},#1}
+
+% Dato destacado (número grande en ventana)
+\newcommand{\inkstat}[2]{%
+  \begin{tcolorbox}[inkwin,halign=center,width=\linewidth]
+    {\Huge\bfseries #1}\par\smallskip{\footnotesize #2}
+  \end{tcolorbox}}
+
+% ---------------------------------------------------------------
+% Portada
+% ---------------------------------------------------------------
+\setbeamertemplate{title page}{%
+  \vfill
+  \begin{tcolorbox}[inkwin,width=0.86\linewidth,left=6mm,right=6mm,top=6mm,bottom=6mm,
+      before=\centering]
+    {\usebeamerfont{title}\inserttitle\par}
+    \ifx\insertsubtitle\@empty\else\smallskip{\usebeamerfont{subtitle}\insertsubtitle\par}\fi
+    \vskip4mm{\color{ink}\rule{\linewidth}{\inkthin}}\vskip4mm
+    {\usebeamerfont{author}\insertauthor\par}
+    \smallskip{\usebeamerfont{institute}\insertinstitute\par}
+    \smallskip{\usebeamerfont{date}\color{inactive!60!ink}\insertdate\par}
+  \end{tcolorbox}
+  \vfill}
+
+% ---------------------------------------------------------------
+% Página de sección: número invertido
+% ---------------------------------------------------------------
+\AtBeginSection{%
+  \begin{frame}[plain,noframenumbering]
+    \vfill
+    \begin{center}
+      \begin{tikzpicture}
+        \node[fill=ink,text=paper,font=\Huge\bfseries,minimum width=18mm,minimum height=18mm,
+              inner sep=0] (n) {\thesection};
+        \node[anchor=west,font=\LARGE\bfseries,text=ink] (t) at ($(n.east)+(6mm,0)$) {\insertsectionhead};
+        \fill[ink] ($(n.south west)+(0,-2.5mm)$) rectangle ($(t.east |- n.south)+(0,-2.5mm-\inkthick)$);
+      \end{tikzpicture}
+    \end{center}
+    \vfill
+  \end{frame}}
+
+% ---------------------------------------------------------------
+% Índice: número de sección invertido
+% ---------------------------------------------------------------
+\setbeamertemplate{section in toc}{%
+  \leavevmode\colorbox{ink}{\makebox[1.3em]{\textcolor{paper}{\bfseries\inserttocsectionnumber}}}%
+  \hspace{0.8em}\textbf{\inserttocsection}\par\medskip}
+
+% ---------------------------------------------------------------
+% Diapositiva final invertida
+% ---------------------------------------------------------------
+\newcommand{\inkfinal}[1]{{%
+  \setbeamercolor{background canvas}{bg=ink}%
+  \setbeamercolor{normal text}{fg=paper}%
+  \begin{frame}[plain,noframenumbering]
+    \color{paper}\centering\vfill #1\vfill
+  \end{frame}}}
+
+% ---------------------------------------------------------------
+% Código: barras negras arriba (con lenguaje) y abajo, como en nvim
+% ---------------------------------------------------------------
+\RequirePackage{listings}
+\lstdefinestyle{eink}{
+  basicstyle=\ttfamily\scriptsize\color{ink},
+  keywordstyle=\color{ink}\bfseries,
+  commentstyle=\color{inactive!80!ink}\itshape,
+  stringstyle=\color{sage},
+  numberstyle=\tiny\color{inactive},
+  emphstyle=\color{rust}\bfseries,
+  breaklines=true, showstringspaces=false, columns=fullflexible, keepspaces=true,
+  frame=none, xleftmargin=0pt, aboveskip=0pt, belowskip=0pt,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1
+}
+\lstset{style=eink}
+% \begin{codigo}[opciones de tcolorbox]{título}
+\newtcblisting{codigo}[2][]{
+  inkwin, listing only, left=2mm, right=2mm, top=1.5mm, bottom=1.5mm,
+  title={#2}, colbacktitle=ink, bottomrule=\inkthick,
+  listing options={style=eink,language=Python}, #1}
