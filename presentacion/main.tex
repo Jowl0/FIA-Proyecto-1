@@ -133,10 +133,21 @@
 \section{Metodología}
 % ============================================================
 
-\begin{frame}[fragile]{Preprocesamiento}
-  \begin{columns}[t]
-    \begin{column}{0.53\textwidth}
-\begin{codigo}[equal height group=prep]{Atributos · OrdinalEncoder}
+\begin{frame}[fragile]{Preprocesamiento: atributos}
+  \begin{columns}[c]
+    \begin{column}{0.42\textwidth}
+      \small
+      \begin{itemize}
+        \setlength{\itemsep}{0.5em}
+        \item La red solo recibe \textbf{números}, no texto.
+        \item Cada atributo tiene un \textbf{orden natural}:
+              low < med < high < vhigh.
+        \item \textbf{OrdinalEncoder} asigna 0, 1, 2, \dots{} respetando
+              ese orden (se le pasa explícito).
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.56\textwidth}
+\begin{codigo}{Atributos · OrdinalEncoder}
 orden_buying = ["low", "med", "high", "vhigh"]
 # ... un orden por cada atributo
 ordinal_encoder = OrdinalEncoder(categories=[
@@ -144,15 +155,6 @@ ordinal_encoder = OrdinalEncoder(categories=[
     orden_persons, orden_lug_boot, orden_safety])
 X = ordinal_encoder.fit_transform(X)
 # low->0  med->1  high->2  vhigh->3
-\end{codigo}
-    \end{column}
-    \begin{column}{0.43\textwidth}
-\begin{codigo}[equal height group=prep]{Etiqueta · LabelEncoder}
-label_encoder = LabelEncoder()
-y = label_encoder.fit_transform(y)
-# Orden alfabético:
-# acc->0    good->1
-# unacc->2  vgood->3
 \end{codigo}
     \end{column}
   \end{columns}
@@ -170,6 +172,38 @@ y = label_encoder.fit_transform(y)
     \draw[ink, line width=\inkthin] (0,0) rectangle (1728,7mm);
     \draw[ink, line width=\inkthin] (1105,0) -- ++(0,7mm) (1382,0) -- ++(0,7mm);
   \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]{Preprocesamiento: etiqueta}
+  \begin{columns}[c]
+    \begin{column}{0.44\textwidth}
+      \small
+      \begin{itemize}
+        \setlength{\itemsep}{0.6em}
+        \item \textbf{LabelEncoder} convierte cada clase en un entero.
+        \item Usa \textbf{orden alfabético}:\\
+              acc\,=\,0, good\,=\,1, unacc\,=\,2, vgood\,=\,3.
+        \item El orden no importa: hay \textbf{una neurona de salida por clase}.
+        \item Queda como entero (no \emph{one-hot}); por eso la pérdida es la
+              versión \textbf{sparse}.
+        \item \textbf{inverse\_transform} regresa la predicción a texto.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+\begin{codigo}{Etiqueta · LabelEncoder}
+label_encoder = LabelEncoder()
+y = label_encoder.fit_transform(y)
+
+label_encoder.classes_
+# ['acc', 'good', 'unacc', 'vgood']
+#    0      1       2        3
+
+# Después de predecir: número -> texto
+label_encoder.inverse_transform([1])
+# ['good']
+\end{codigo}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}{Arquitectura de la red}
