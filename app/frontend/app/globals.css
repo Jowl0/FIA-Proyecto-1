@@ -1,0 +1,66 @@
+/* Tema e-ink (Hyprland/Waybar): papel, tinta, bordes rectos y sombra dura */
+:root {
+  --papel: #f2f2e9;
+  --tinta: #121212;
+  --gris: #999999;
+  --salvia: #6b7a6b;
+  --oxido: #945454;
+  --tenue: #555555;
+  --borde: 2px;
+  --sombra: 8px;
+  --color-sombra: var(--tinta);
+  color-scheme: light;
+}
+
+/* Modo oscuro: se intercambian papel y tinta (como el theme-toggle de nvim).
+   Sigue al sistema, salvo que el usuario elija un tema con el botón. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --papel: #121212;
+    --tinta: #f2f2e9;
+    --gris: #6f6f6a;
+    --tenue: #a3a39b;
+    --color-sombra: #4a4a45;
+    color-scheme: dark;
+  }
+}
+
+:root[data-tema="oscuro"] {
+  --papel: #121212;
+  --tinta: #f2f2e9;
+  --gris: #6f6f6a;
+  --tenue: #a3a39b;
+  --color-sombra: #4a4a45;
+  color-scheme: dark;
+}
+
+/* Transición de tema (ver BotonTema.tsx): se desactiva el fundido por defecto
+   para que solo se vea el círculo que revela el tema nuevo */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: var(--papel);
+  color: var(--tinta);
+}
+
+body {
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}

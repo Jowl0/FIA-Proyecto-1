@@ -57,9 +57,24 @@ plt.rcParams.update(
 # Mapa de color de un solo tono: papel -> tinta
 CMAP_EINK = LinearSegmentedColormap.from_list("eink", [PAPEL, TINTA])
 
-# Las figuras se guardan junto a la presentación si existe; si no, en ./figuras
-DIR_FIGURAS = "presentacion/figuras" if os.path.isdir("presentacion") else "figuras"
+# Las figuras se guardan junto a la presentación si existe (ejecutando desde la
+# raíz del repo o desde codigo/); si no (p. ej. en Colab), en ./figuras
+DIR_FIGURAS = next(
+    (
+        d
+        for d in ["presentacion/figuras", "../presentacion/figuras"]
+        if os.path.isdir(d)
+    ),
+    "figuras",
+)
 os.makedirs(DIR_FIGURAS, exist_ok=True)
+
+# El modelo entrenado se guarda para el backend (app/backend/modelo); en Colab, en ./modelo
+DIR_MODELO = next(
+    (d for d in ["app/backend", "../app/backend"] if os.path.isdir(d)), "."
+)
+DIR_MODELO = os.path.join(DIR_MODELO, "modelo")
+os.makedirs(DIR_MODELO, exist_ok=True)
 
 pd.set_option("display.precision", 3)
 
@@ -201,7 +216,7 @@ print("\nIniciando el entrenamiento de la red neuronal...\n")
 historial = modelo.fit(
     X_train,
     y_train,
-    epochs=60,
+    epochs=250,
     batch_size=16,
     validation_split=0.2,
     verbose=1,  # Imprime cada época/generación en la terminal
@@ -211,6 +226,10 @@ historial = modelo.fit(
 perdida, precision = modelo.evaluate(X_test, y_test, verbose=0)
 print(f"\n--- Resultados Finales en Test ---")
 print(f"Precisión del modelo: {precision * 100:.2f}%\n")
+
+# Guardar la red entrenada (arquitectura + pesos) para el backend
+modelo.save(os.path.join(DIR_MODELO, "modelo.keras"))
+print(f"Modelo guardado en {os.path.join(DIR_MODELO, 'modelo.keras')}\n")
 
 # 8. Predicciones y Gráfico Real vs Predicción (Matriz de Confusión)
 print("Generando predicciones para graficar...\n")
@@ -225,7 +244,10 @@ fila = df_original.iloc[idx_test[i]]
 print("--- Ejemplo: un auto a través de la red ---")
 print("Auto original:  ", dict(fila[columnas_features]))
 print("Entrada a la red:", X_test[i].astype(int))
-print("Salida softmax:  ", {c: f"{p:.3f}" for c, p in zip(label_encoder.classes_, predicciones_prob[i])})
+print(
+    "Salida softmax:  ",
+    {c: f"{p:.3f}" for c, p in zip(label_encoder.classes_, predicciones_prob[i])},
+)
 print("argmax:          ", predicciones_clases[i])
 print("Predicción:      ", label_encoder.inverse_transform([predicciones_clases[i]])[0])
 print("Clase real:      ", fila["class"], "\n")

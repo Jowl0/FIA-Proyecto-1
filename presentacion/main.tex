@@ -13,6 +13,7 @@
 \usepackage{graphicx}
 \graphicspath{{figuras/}}
 \usepackage{pgfplots}
+\usepackage{qrcode}
 \pgfplotsset{compat=1.18}
 
 % --- Bibliografía ---
@@ -20,13 +21,15 @@
 \addbibresource{referencias.bib}
 
 % Precisión obtenida en el conjunto de prueba (actualizar tras ejecutar el script)
-\newcommand{\precision}{93.93\,\%}
+\newcommand{\precision}{95.66\,\%}
 
 \title{Clasificación de automóviles con redes neuronales}
 \subtitle{Proyecto 1 --- Conjunto de datos \emph{Car Evaluation}}
 \author{Joel Reyes García \and Rodrigo Sosa Mendoza}
 \institute{Fundamentos de Inteligencia Artificial}
 \date{\today}
+\titlegraphic{\includegraphics[height=\paperheight]{logo.jpg}}
+\piedeportada{Perceptrón multicapa 6 → 32 → 16 → 4}
 
 \begin{document}
 
@@ -277,7 +280,7 @@ label_encoder.inverse_transform([1])
       \begin{itemize}
         \setlength{\itemsep}{0.5em}
         \item Optimizador: \textbf{Adam}
-        \item Épocas: \textbf{60}
+        \item Épocas: \textbf{250}
         \item Tamaño de lote: \textbf{16}
         \item Validación: \textbf{20\,\%} del entrenamiento
         \item Métrica: exactitud
@@ -293,7 +296,7 @@ modelo = Sequential([
 modelo.compile(optimizer="adam",
                loss="sparse_categorical_crossentropy",
                metrics=["accuracy"])
-modelo.fit(X_train, y_train, epochs=60,
+modelo.fit(X_train, y_train, epochs=250,
            batch_size=16, validation_split=0.2)
 \end{codigo}
     \end{column}
@@ -330,9 +333,9 @@ modelo.fit(X_train, y_train, epochs=60,
       \begin{itemize}
         \setlength{\itemsep}{0.6em}
         \item \textbf{Filas}: clase real.\\ \textbf{Columnas}: predicción.
-        \item \textbf{Diagonal}: aciertos, \alert{325 de 346}.
-        \item \textbf{Fuera de la diagonal}: 21 errores.
-        \item \textbf{20 de 21} errores son entre clases \textbf{vecinas}
+        \item \textbf{Diagonal}: aciertos, \alert{331 de 346}.
+        \item \textbf{Fuera de la diagonal}: 15 errores.
+        \item \textbf{14 de 15} errores son entre clases \textbf{vecinas}
               (\texttt{unacc}↔\texttt{acc}, \texttt{acc}↔\texttt{good},
               \texttt{good}↔\texttt{vgood}).
         \item Nunca confunde \texttt{unacc} con \texttt{good} ni \texttt{vgood}.
@@ -345,10 +348,10 @@ modelo.fit(X_train, y_train, epochs=60,
         \begin{tabular}{lccc}
           \textbf{Clase} & \textbf{Precisión} & \textbf{Recall} & \textbf{Casos} \\
           \midrule
-          unacc & 0.97 & 0.97 & 235 \\
-          acc   & 0.88 & 0.88 &  83 \\
-          good  & 0.75 & 0.82 &  11 \\
-          vgood & 0.94 & 0.94 &  17 \\
+          unacc & 0.98 & 0.99 & 235 \\
+          acc   & 0.94 & 0.92 &  83 \\
+          good  & 0.67 & 0.91 &  11 \\
+          vgood & 1.00 & 0.76 &  17 \\
         \end{tabular}
       \end{ventana}
       \scriptsize
@@ -356,6 +359,128 @@ modelo.fit(X_train, y_train, epochs=60,
       \textbf{Recall}: de los $X$ reales, cuántos encontró.
     \end{column}
   \end{columns}
+\end{frame}
+
+% ============================================================
+\section{Demostración}
+% ============================================================
+
+\begin{frame}[fragile]{Guardar el modelo}
+  \begin{columns}[c]
+    \begin{column}{0.42\textwidth}
+      \small
+      \begin{itemize}
+        \setlength{\itemsep}{0.5em}
+        \item Guardar la red evita \textbf{reentrenar} cada vez que se usa.
+        \item Se guarda al final del script, después de evaluar.
+        \item \textbf{modelo.keras} es un \texttt{.zip} de 35\,KB con la
+              arquitectura, los \textbf{820 pesos} y el estado de Adam.
+        \item \textbf{No} guarda los encoders: quien lo use debe codificar
+              con el mismo orden.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.56\textwidth}
+\begin{codigo}{codigo/proyecto\_1.py}
+modelo.fit(X_train, y_train, epochs=250, ...)
+modelo.evaluate(X_test, y_test)
+modelo.save("app/backend/modelo/modelo.keras")
+\end{codigo}
+      \begin{ventanat}{Contenido de modelo.keras}
+        \footnotesize\hyphenpenalty=10000
+        \renewcommand{\arraystretch}{1.1}
+        \begin{tabular}{@{}l@{\hspace{3mm}}p{\dimexpr\linewidth-31mm\relax}@{}}
+          \textbf{config.json}      & arquitectura 6→32→16→4, activaciones,
+                                      pérdida y optimizador \\
+          \textbf{model.weights.h5} & los 820 pesos y sesgos + estado de
+                                      Adam (17\,500 pasos) \\
+          \textbf{metadata.json}    & versión de Keras y fecha \\
+        \end{tabular}
+      \end{ventanat}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Cargar y usar el modelo}
+  \begin{columns}[c]
+    \begin{column}{0.42\textwidth}
+      \small
+      \begin{itemize}
+        \setlength{\itemsep}{0.5em}
+        \item \textbf{load\_model} reconstruye la red con los mismos pesos.
+        \item Ya no se entrena: solo la \textbf{pasada hacia adelante}
+              (inferencia).
+        \item Es lo que hace el backend en cada petición.
+      \end{itemize}
+      \vspace{1em}
+      {\scriptsize\ttfamily proyecto\_1.py → modelo.keras → main.py\par}
+    \end{column}
+    \begin{column}{0.56\textwidth}
+\begin{codigo}{Uso del modelo guardado}
+modelo = tf.keras.models.load_model("modelo.keras")
+
+# Auto ya codificado (ver Preprocesamiento)
+x = np.array([[0, 1, 3, 2, 1, 1]])
+
+p = modelo(x)[0]
+# [0.001, 0.999, 0.000, 0.000]
+#   acc   good   unacc  vgood
+
+CLASES[np.argmax(p)]
+# 'good'
+\end{codigo}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Backend con FastAPI}
+  \begin{columns}[c]
+    \begin{column}{0.38\textwidth}
+      \small
+      \begin{itemize}
+        \setlength{\itemsep}{0.5em}
+        \item Carga \textbf{modelo.keras} una vez al arrancar.
+        \item Codifica el auto \textbf{igual que en el entrenamiento}.
+        \item \textbf{argmax} de las 4 probabilidades da la clase.
+        \item \textbf{\textasciitilde10 ms} por predicción;
+              \textasciitilde400/s con 4 procesos.
+        \item En \textbf{Docker}, solo accesible desde la red interna.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.60\textwidth}
+\begin{codigo}{app/backend/main.py (simplificado)}
+modelo = load_model("modelo/modelo.keras")
+app = FastAPI()
+
+@app.post("/api/predecir")
+def predecir(auto: Auto):
+    entrada = [ORDEN[a].index(getattr(auto, a))
+               for a in ORDEN]
+    salida = modelo(np.array([entrada]))[0]
+    return {
+        "clase": CLASES[np.argmax(salida)],
+        "probabilidades": dict(zip(CLASES, salida)),
+    }
+\end{codigo}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Pruébalo}
+  \vfill
+  \centering
+  \begin{tikzpicture}
+    \node[inner sep=0] (qr) {\textcolor{ink}{\qrcode[height=48mm]{https://fia.jowlab.com/}}};
+    \fill[ink] ($(qr.east)+(8mm,-24mm)$) rectangle ++(1.1mm,48mm);
+    \node[anchor=west, align=left, inner sep=0, text width=62mm]
+      at ($(qr.east)+(15mm,0)$) {%
+      {\Large\bfseries Escanea y\\clasifica un auto\par}
+      \vskip3.5mm{\rule{\linewidth}{1.6pt}}\vskip3.5mm
+      {\large\bfseries fia.jowlab.com}\par
+      \vskip4mm
+      {\small Elige las características y la red responde en tiempo
+       real con la clase y sus probabilidades.}\par};
+  \end{tikzpicture}
+  \vfill
 \end{frame}
 
 % ============================================================
@@ -370,10 +495,12 @@ modelo.fit(X_train, y_train, epochs=60,
     \item La codificación ordinal preserva el orden de los atributos y
           simplifica la entrada de la red.
     \item Los errores se concentran entre clases vecinas: la red aprendió
-          el orden de las categorías. \texttt{good} es la clase más débil
-          (pocos ejemplos por el desbalance).
-    \item \textbf{Trabajo futuro:} pesos por clase, validación cruzada y
-          ajuste de hiperparámetros.
+          el orden de las categorías. \texttt{good} y \texttt{vgood} son las
+          más débiles (pocos ejemplos por el desbalance).
+    \item Con 250 épocas la exactitud de entrenamiento llega a 100\,\% y la
+          de validación a 97\,\%: hay que vigilar el sobreajuste.
+    \item \textbf{Trabajo futuro:} pesos por clase, \emph{early stopping} y
+          validación cruzada.
   \end{itemize}
 \end{frame}
 

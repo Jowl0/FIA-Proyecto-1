@@ -1,0 +1,5 @@
+fastapi==0.128.0
+uvicorn==0.40.0
+# Misma versión con la que se entrenó y guardó modelo.keras (CPU basta para inferir)
+tensorflow-cpu==2.21.0
+numpy

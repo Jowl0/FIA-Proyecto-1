@@ -1,0 +1,4 @@
+# Secretos (token del túnel de Cloudflare, etc.)
+.env
+.env.*
+!.env.example

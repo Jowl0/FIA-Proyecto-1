@@ -1,0 +1,46 @@
+# Red neuronal de Car Evaluation: frontend (Next.js) + backend (FastAPI).
+#
+#   docker compose up --build     ->  http://localhost:3000 (y el túnel de Cloudflare)
+#
+# Solo el frontend publica un puerto. El backend vive únicamente en la red
+# "interna" (sin salida a internet ni puertos publicados); el frontend la usa
+# para reenviarle las peticiones /api/*.
+
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    networks:
+      - interna
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:8000
+    ports:
+      - "${FRONT_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - interna # para hablar con el backend
+      - publica # para poder publicar el puerto 3000
+
+  # Túnel de Cloudflare: publica el frontend en internet sin abrir puertos.
+  # El token se lee de ../.env (TUNNEL_TOKEN). En el panel de Cloudflare el
+  # servicio del túnel debe apuntar a  http://frontend:3000
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    env_file: ../.env
+    depends_on:
+      - frontend
+    networks:
+      - publica # necesita internet y ver al frontend; nunca al backend
+
+networks:
+  interna:
+    internal: true
+  publica:

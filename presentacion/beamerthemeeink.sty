@@ -3,6 +3,7 @@
 %   * papel #F2F2E9, tinta #121212, sin degradados ni esquinas redondeadas.
 %   * "ventanas" con borde de 2px y sombra dura desplazada (sin desenfoque).
 %   * números de sección invertidos (tinta/papel), como los workspaces.
+%   * portada minimalista: imagen, barra vertical de tinta y título.
 %   * tipografía JetBrainsMono Nerd Font (compilar con LuaLaTeX).
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{beamerthemeeink}[2026/09/28 Tema e-ink (Hyprland/Waybar)]
@@ -42,7 +43,7 @@
 \setmonofont{JetBrainsMono Nerd Font}[Scale=0.92]
 \usefonttheme{professionalfonts}
 \setbeamerfont{frametitle}{size=\large,series=\bfseries}
-\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{title}{size=\Large,series=\bfseries}
 \setbeamerfont{subtitle}{size=\normalsize}
 \setbeamerfont{author}{size=\small,series=\bfseries}
 \setbeamerfont{institute}{size=\small}
@@ -116,18 +117,31 @@
 % ---------------------------------------------------------------
 % Portada
 % ---------------------------------------------------------------
+% Imagen a la izquierda (\titlegraphic, a toda la altura), barra de tinta y
+% el título a la derecha: mismo diseño que la vista previa de la app web.
+\newcommand{\piedeportada}[1]{\gdef\inkpiedeportada{#1}}
+\piedeportada{}
 \setbeamertemplate{title page}{%
-  \vfill
-  \begin{tcolorbox}[inkwin,width=0.86\linewidth,left=6mm,right=6mm,top=6mm,bottom=6mm,
-      before=\centering]
-    {\usebeamerfont{title}\inserttitle\par}
-    \ifx\insertsubtitle\@empty\else\smallskip{\usebeamerfont{subtitle}\insertsubtitle\par}\fi
-    \vskip4mm{\color{ink}\rule{\linewidth}{\inkthin}}\vskip4mm
-    {\usebeamerfont{author}\insertauthor\par}
-    \smallskip{\usebeamerfont{institute}\insertinstitute\par}
-    \smallskip{\usebeamerfont{date}\color{inactive!60!ink}\insertdate\par}
-  \end{tcolorbox}
-  \vfill}
+  \begin{tikzpicture}[remember picture, overlay]
+    \fill[paper] (current page.south west) rectangle (current page.north east);
+    \node[anchor=west, inner sep=0] at (current page.west) {\inserttitlegraphic};
+    \fill[ink] ([xshift=\paperheight]current page.south west)
+      rectangle ([xshift=\paperheight+1.1mm]current page.north west);
+    \node[anchor=north west, inner sep=0, align=left,
+          text width=\paperwidth-\paperheight-15mm]
+      at ([xshift=\paperheight+8mm, yshift=-13mm]current page.north west) {%
+      \hyphenpenalty=10000\exhyphenpenalty=10000 % sin cortar palabras con guion
+      {\usebeamerfont{title}\color{ink}\inserttitle\par}
+      \vskip3.5mm{\color{ink}\rule{\linewidth}{1.6pt}}\vskip3.5mm
+      {\small\color{ink}\insertsubtitle\par}
+      \vskip5mm
+      {\usebeamerfont{author}\color{ink}\def\beamer@andtitle{\par}\insertauthor\par}
+      \vskip1.5mm{\footnotesize\color{ink}\insertinstitute\par}
+      \vskip1mm{\footnotesize\color{inactive!60!ink}\insertdate\par}};
+    \node[anchor=south west, inner sep=0, font=\scriptsize, text=inactive!60!ink]
+      at ([xshift=\paperheight+8mm, yshift=5mm]current page.south west)
+      {\inkpiedeportada};
+  \end{tikzpicture}}
 
 % ---------------------------------------------------------------
 % Página de sección: número invertido
@@ -154,7 +168,7 @@
   \hspace{0.8em}\textbf{\inserttocsection}\par\medskip}
 
 % ---------------------------------------------------------------
-% Diapositiva final invertida
+% Diapositiva final invertida (fondo de tinta, texto de papel)
 % ---------------------------------------------------------------
 \newcommand{\inkfinal}[1]{{%
   \setbeamercolor{background canvas}{bg=ink}%
