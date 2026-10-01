@@ -7,7 +7,7 @@ Clasificación de la aceptabilidad de automóviles (`unacc`, `acc`, `good`, `vgo
 del conjunto [Car Evaluation](https://archive.ics.uci.edu/dataset/19/car+evaluation)
 (UCI) con un perceptrón multicapa en TensorFlow/Keras.
 
-**Demo en vivo:** <https://fia.jowlab.com>
+**Presentación:** [`presentacion.pdf`](presentacion.pdf)
 
 ## Resultados
 
@@ -23,6 +23,7 @@ La mayoría de los errores ocurren entre clases vecinas (`unacc`↔`acc`, `good`
 
 ```
 .
+├── presentacion.pdf         # presentación compilada
 ├── codigo/
 │   ├── proyecto_1.py        # carga, encoding, entrenamiento, evaluación y guardado del modelo
 │   └── graficas.py          # gráficas con estilo e-ink (distribución y matriz de confusión)
@@ -57,9 +58,13 @@ Dependencias: `numpy`, `pandas`, `matplotlib`, `seaborn`, `scikit-learn`,
 
 ## Presentación
 
+La versión compilada está en [`presentacion.pdf`](presentacion.pdf). Para
+compilarla de nuevo:
+
 ```bash
 cd presentacion
 latexmk main.tex   # LuaLaTeX; PDF en presentacion/build/main.pdf
+cp build/main.pdf ../presentacion.pdf
 ```
 
 ## App web
