@@ -32,11 +32,12 @@
 /* Botón de tema: mismo estilo que los botones segmentados */
 .tema {
   flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
   background: var(--papel);
   border: var(--borde) solid var(--tinta);
-  padding: 5px 10px;
-  font-size: 0.75rem;
-  font-weight: 700;
 }
 
 .tema:hover {
@@ -321,5 +322,111 @@
   .segmentos button {
     padding: 8px 2px;
     font-size: 0.75rem;
+  }
+}
+
+/* Escritorio: la página usa todo el ancho; las dos ventanas tienen la misma
+   altura (la de su contenido), quedan centradas en la pantalla y todo escala */
+@media (min-width: 901px) {
+  .main {
+    max-width: none;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(24px, 3.5vh, 48px) clamp(24px, 4vw, 72px);
+  }
+
+  .encabezado {
+    margin-bottom: clamp(20px, 3.5vh, 40px);
+  }
+
+  .encabezado h1 {
+    font-size: clamp(1.6rem, 2.2vw, 2.4rem);
+  }
+
+  .encabezado p {
+    font-size: clamp(0.85rem, 0.95vw, 1.05rem);
+  }
+
+  .columnas {
+    /* margin-block auto: centra las ventanas en el alto que queda libre */
+    margin-block: auto;
+    align-items: stretch;
+    gap: clamp(28px, 3.5vw, 64px);
+    padding-bottom: var(--sombra);
+  }
+
+  .ventana {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .titulo {
+    font-size: clamp(0.9rem, 1vw, 1.1rem);
+    padding: clamp(8px, 1.2vh, 12px) clamp(14px, 1.4vw, 22px);
+  }
+
+  .cuerpo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(20px, 3vh, 36px) clamp(16px, 1.8vw, 32px);
+  }
+
+  /* Etiqueta ~40 % y botones ~60 %: los botones no se comen a la etiqueta */
+  .campo {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: clamp(12px, 1.5vw, 28px);
+  }
+
+  .campo + .campo {
+    margin-top: clamp(12px, 2.2vh, 26px);
+  }
+
+  .etiqueta {
+    font-size: clamp(0.9rem, 1.05vw, 1.2rem);
+  }
+
+  .segmentos button {
+    padding: clamp(6px, 1.1vh, 11px) 4px;
+    font-size: clamp(0.78rem, 0.85vw, 0.95rem);
+  }
+
+  .resultado {
+    font-size: clamp(1rem, 1.25vw, 1.4rem);
+    margin-bottom: clamp(8px, 1.5vh, 16px);
+  }
+
+  .clase {
+    font-size: clamp(2rem, 3.4vw, 3.8rem);
+  }
+
+  .subtitulo {
+    font-size: clamp(0.8rem, 0.9vw, 1rem);
+    margin: clamp(16px, 2.6vh, 30px) 0 clamp(10px, 1.4vh, 16px);
+  }
+
+  .barras li {
+    grid-template-columns: clamp(56px, 5vw, 88px) minmax(0, 1fr) clamp(60px, 5vw, 88px);
+    font-size: clamp(0.85rem, 1vw, 1.15rem);
+  }
+
+  .barras li + li {
+    margin-top: clamp(8px, 1.6vh, 18px);
+  }
+
+  .pista {
+    height: clamp(14px, 2.2vh, 26px);
+  }
+
+  .vector li {
+    width: clamp(40px, 3.6vw, 68px);
+    padding: clamp(6px, 1.3vh, 14px) 0;
+    font-size: clamp(1rem, 1.25vw, 1.4rem);
+  }
+
+  .estado {
+    font-size: clamp(0.75rem, 0.8vw, 0.9rem);
   }
 }

@@ -35,28 +35,32 @@ function aplicarTema(tema: Tema) {
   } catch {}
 }
 
-// Transición: el tema nuevo aparece como un círculo que crece desde el botón.
-// Sin soporte de View Transitions o con "reducir movimiento", cambia al instante.
-function cambiarTema(tema: Tema, boton: HTMLElement) {
+// Transición: fundido parejo entre el tema viejo y el nuevo (View Transitions).
+// Sin soporte o con "reducir movimiento", cambia al instante.
+function cambiarTema(tema: Tema) {
   const sinAnimacion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (!document.startViewTransition || sinAnimacion) {
     aplicarTema(tema);
     return;
   }
+  document.startViewTransition(() => aplicarTema(tema));
+}
 
-  const { left, top, width, height } = boton.getBoundingClientRect();
-  const x = left + width / 2;
-  const y = top + height / 2;
-  // Radio hasta la esquina más lejana de la ventana
-  const radio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+function Luna() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+    </svg>
+  );
+}
 
-  const transicion = document.startViewTransition(() => aplicarTema(tema));
-  transicion.ready.then(() => {
-    document.documentElement.animate(
-      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radio}px at ${x}px ${y}px)`] },
-      { duration: 550, easing: "cubic-bezier(0.4, 0, 0.2, 1)", pseudoElement: "::view-transition-new(root)" },
-    );
-  });
+function Sol() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+    </svg>
+  );
 }
 
 export default function BotonTema({ className }: { className?: string }) {
@@ -70,9 +74,10 @@ export default function BotonTema({ className }: { className?: string }) {
       type="button"
       className={className}
       aria-label={`Cambiar a modo ${siguiente}`}
-      onClick={(evento) => cambiarTema(siguiente, evento.currentTarget)}
+      title={`Modo ${siguiente}`}
+      onClick={() => cambiarTema(siguiente)}
     >
-      {siguiente === "oscuro" ? "modo oscuro" : "modo claro"}
+      {siguiente === "oscuro" ? <Luna /> : <Sol />}
     </button>
   );
 }

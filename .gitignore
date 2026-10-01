@@ -2,3 +2,10 @@
 .env
 .env.*
 !.env.example
+
+# Python
+__pycache__/
+*.pyc
+
+# Modelo entrenado: se genera con codigo/proyecto_1.py
+app/backend/modelo/

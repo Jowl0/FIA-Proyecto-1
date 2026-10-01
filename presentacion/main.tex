@@ -156,7 +156,7 @@ orden_buying = ["low", "med", "high", "vhigh"]
 ordinal_encoder = OrdinalEncoder(categories=[
     orden_buying, orden_maint, orden_doors,
     orden_persons, orden_lug_boot, orden_safety])
-X = ordinal_encoder.fit_transform(X)
+X_encoded = ordinal_encoder.fit_transform(X)
 # low->0  med->1  high->2  vhigh->3
 \end{codigo}
     \end{column}
@@ -195,7 +195,8 @@ X = ordinal_encoder.fit_transform(X)
     \begin{column}{0.54\textwidth}
 \begin{codigo}{Etiqueta · LabelEncoder}
 label_encoder = LabelEncoder()
-y = label_encoder.fit_transform(y)
+y_encoded = label_encoder.fit_transform(
+    y.values.ravel())
 
 label_encoder.classes_
 # ['acc', 'good', 'unacc', 'vgood']

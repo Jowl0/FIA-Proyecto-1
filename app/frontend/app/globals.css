@@ -34,12 +34,11 @@
   color-scheme: dark;
 }
 
-/* Transición de tema (ver BotonTema.tsx): se desactiva el fundido por defecto
-   para que solo se vea el círculo que revela el tema nuevo */
+/* Transición de tema (ver BotonTema.tsx): fundido parejo */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
+  animation-duration: 0.4s;
+  animation-timing-function: ease-in-out;
 }
 
 * {
